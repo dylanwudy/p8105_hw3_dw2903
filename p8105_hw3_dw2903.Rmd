@@ -1,0 +1,34 @@
+---
+title: "p8105_hw3_dw2903"
+author: "Di Wu dw2903"
+date: "2019/10/12"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(p8105.datasets)
+library(httr)
+library(jsonlite)
+
+```
+
+## Problem 1
+```{r}
+data("instacart")
+
+```
+
+## Problem 2
+```{r}
+data("brfss_smart2010")
+
+```
+
+## Problem 3
+
+```{r}
+accel_data = read.csv("./accel_data.csv")
+
+```
