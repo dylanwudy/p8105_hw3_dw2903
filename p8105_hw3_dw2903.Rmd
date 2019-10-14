@@ -11,14 +11,122 @@ library(tidyverse)
 library(p8105.datasets)
 library(httr)
 library(jsonlite)
-
+data("instacart")
+data("brfss_smart2010")
 ```
 
 ## Problem 1
 ```{r}
-data("instacart")
+nrow(count(instacart,aisle))
+instacart %>%
+  group_by(aisle) %>%
+  count()%>%
+  arrange(desc(n)) 
+```
+
+There are 134 aisles in this dataset and the aisle that most order from is fresh vegetables
+
+```{r}
+instacart %>% 
+  count(aisle)%>%
+  filter(n>10000) %>%
+  arrange(desc(n))%>%
+  ggplot(aes(y=n, color=aisle))+geom_boxplot()
+```
+
+```{r}
+instacart %>%
+  select(aisle %in% c("baking_ingredients") )
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Problem 2
 ```{r}
