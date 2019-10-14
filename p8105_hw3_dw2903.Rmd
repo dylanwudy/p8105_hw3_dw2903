@@ -9,8 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
-library(httr)
-library(jsonlite)
+library(patchwork)
 data("instacart")
 data("brfss_smart2010")
 ```
@@ -20,8 +19,8 @@ data("brfss_smart2010")
 nrow(count(instacart,aisle))
 instacart %>%
   group_by(aisle) %>%
-  count()%>%
-  arrange(desc(n)) 
+  summarize(n=n()) %>%
+  arrange(desc(n))
 ```
 
 There are 134 aisles in this dataset and the aisle that most order from is fresh vegetables
@@ -34,109 +33,222 @@ instacart %>%
   ggplot(aes(y=n, color=aisle))+geom_boxplot()
 ```
 
+
 ```{r}
-instacart %>%
-  select(aisle %in% c("baking_ingredients") )
+baking = 
+  instacart %>%
+  filter(
+    aisle == "baking ingredients")%>%
+  group_by(product_name)%>%
+  count()%>%
+  arrange(desc(n))
+dog_food = 
+  instacart %>%
+  filter(
+    aisle == "dog food care")%>%
+  group_by(product_name)%>%
+  count()%>%
+  arrange(desc(n))
+vege = 
+  instacart %>%
+  filter(
+    aisle == "packaged vegetables fruits")%>%
+  group_by(product_name)%>%
+  count()%>%
+  arrange(desc(n))
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```{r}
+rbind(
+  baking=baking[c(1:3),c(1:2)],
+  dog_food=dog_food[c(1:3),c(1:2)],
+  vege=vege[c(1:3),c(1:2)])
+```
+
+```{r}
+instacart %>%
+  filter(product_name %in% c("Pink Lady Apple","Coffee Ice Cream"))%>%
+  group_by(product_name, order_dow)%>%
+  summarize(
+    mean_order_hour_of_day = mean(order_hour_of_day)
+  ) %>% 
+  pivot_wider(
+    names_from = product_name,
+    values_from = mean_order_hour_of_day
+  )
+```
 
 ## Problem 2
 ```{r}
-data("brfss_smart2010")
-
+brfss_adj=
+  brfss_smart2010 %>%
+  janitor::clean_names() %>%
+  filter(topic == "Overall Health",
+         response %in% c("Excellent","Poor")) %>%
+  arrange(.,desc(response))
+brfss_adj
 ```
 
+
+```{r}
+brfss_adj %>%
+  filter(
+    year == 2002) %>%
+  group_by(year,locationabbr) %>%
+  count()%>%
+  filter(n>=7)
+```
+
+```{r}
+brfss_adj %>%
+  filter(
+    year == 2010) %>%
+  group_by(year,locationabbr) %>%
+  count()%>%
+  filter(n>=7)
+```
+
+
+```{r}
+brfss_adj %>%
+  filter(response == "Excellent") %>%
+  select(year, locationabbr, data_value) %>%
+  group_by(year,locationabbr) %>%
+  summarize(
+    mean_data_value = mean(data_value)
+   )%>%
+  ggplot(aes(x=year, y=mean_data_value, color = locationabbr))+geom_line()
+  
+```
+
+```{r}
+brfss_06=
+brfss_adj %>%
+  filter(year == 2006) %>%
+  group_by(locationabbr,response)%>%
+  summarize(
+    mean_data_value = mean(data_value)
+  )%>%
+  ggplot(aes(x=locationabbr,y=mean_data_value, color=response))+geom_point()
+
+brfss_10=
+brfss_adj %>%
+  filter(year == 2010) %>%
+  group_by(locationabbr,response)%>%
+  summarize(
+    mean_data_value = mean(data_value)
+  )%>%
+  ggplot(aes(x=locationabbr,y=mean_data_value, color=response))+geom_point()
+brfss_06/ brfss_10
+```
 ## Problem 3
 
 ```{r}
-accel_data = read.csv("./accel_data.csv")
-
+accel_data = 
+  read.csv("./accel_data.csv") %>%
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    names_prefix = "activity_",
+    values_to = "activity"
+  ) %>%
+  mutate(
+    weekend =case_when(
+      day_id %in% c(3,4) ~"weekend",
+      day_id %in% c(1,2,5,6,7) ~"weekday"
+    )
+  )
+accel_data
 ```
+In the tidy version of the data frame, the week, week_id and minute variable indicate the date and time of the point measure, and the day and weekend variable showing which day it is and whether it is weekend
+
+
+```{r}
+accel_data %>%
+  group_by(week,day)%>%
+  summarize(
+    total_activity = sum(activity)
+  ) 
+```
+As showing in the total activity over the day, from Monday to Sunday generally increased as day passing and then decreased after around 1 weak. this pattern repeat as day passing.
+
+
+```{r}
+accel_data %>%
+  ggplot(aes(x=minute, y = activity, color=day_id))+geom_point()
+```
+
+
+for every day activity, the activity increased slighly and reach the maximum at around 500 minutes and slightly decrease until reac the bottom around 600, and then increased again at around 800 minutes to the second peak of day and then rest to stable.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
